@@ -19,19 +19,19 @@ module Crypto.Cipher.Blowfish.Primitive
     , eksBlowfish
     ) where
 
-import           Control.Monad (when)
+import           Control.Monad              (when)
 import           Data.Bits
 import           Data.Memory.Endian
 import           Data.Word
 
+import           Crypto.Cipher.Blowfish.Box
 import           Crypto.Error
+import           Crypto.Internal.ByteArray  (ByteArray, ByteArrayAccess, Bytes)
+import qualified Crypto.Internal.ByteArray  as B
 import           Crypto.Internal.Compat
 import           Crypto.Internal.Imports
-import           Crypto.Internal.ByteArray (ByteArrayAccess, ByteArray, Bytes)
-import qualified Crypto.Internal.ByteArray as B
-import           Crypto.Internal.Words
 import           Crypto.Internal.WordArray
-import           Crypto.Cipher.Blowfish.Box
+import           Crypto.Internal.Words
 
 -- | variable keyed blowfish state
 data Context = BF (Int -> Word32) -- p
@@ -80,7 +80,7 @@ initBlowfish key
 -- See <https://www.usenix.org/conference/1999-usenix-annual-technical-conference/future-adaptable-password-scheme>
 eksBlowfish :: (ByteArrayAccess salt, ByteArrayAccess password) => Int -> salt -> password -> Context
 eksBlowfish cost salt key
-    | B.length salt /= 16 = error "bcrypt salt must be 16 bytes"
+    -- | B.length salt /= 16 = error "bcrypt salt must be 16 bytes"
     | otherwise           = makeKeySchedule key (Just (salt, cost))
 
 coreCrypto :: Context -> Word64 -> Word64

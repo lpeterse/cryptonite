@@ -374,6 +374,7 @@ Test-Suite test-cryptonite
   Other-modules:     BlockCipher
                      ChaCha
                      BCrypt
+                     BCryptPBKDF
                      ECC
                      ECC.Edwards25519
                      Hash

@@ -1,37 +1,38 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Imports
+import           Imports
 
-import qualified Number
-import qualified Number.F2m
 import qualified BCrypt
+import qualified BCryptPBKDF
+import qualified ChaCha
+import qualified ChaChaPoly1305
 import qualified ECC
 import qualified ECC.Edwards25519
 import qualified Hash
-import qualified Poly1305
-import qualified Salsa
-import qualified XSalsa
-import qualified ChaCha
-import qualified ChaChaPoly1305
-import qualified KAT_MiyaguchiPreneel
-import qualified KAT_CMAC
-import qualified KAT_HMAC
-import qualified KAT_HKDF
 import qualified KAT_Argon2
-import qualified KAT_PBKDF2
+import qualified KAT_CMAC
 import qualified KAT_Curve25519
 import qualified KAT_Curve448
 import qualified KAT_Ed25519
 import qualified KAT_Ed448
+import qualified KAT_HKDF
+import qualified KAT_HMAC
+import qualified KAT_MiyaguchiPreneel
 import qualified KAT_OTP
+import qualified KAT_PBKDF2
 import qualified KAT_PubKey
 import qualified KAT_Scrypt
+import qualified Number
+import qualified Number.F2m
+import qualified Poly1305
+import qualified Salsa
+import qualified XSalsa
 -- symmetric cipher --------------------
 import qualified KAT_AES
 import qualified KAT_Blowfish
-import qualified KAT_CAST5
 import qualified KAT_Camellia
+import qualified KAT_CAST5
 import qualified KAT_DES
 import qualified KAT_RC4
 import qualified KAT_TripleDES
@@ -63,6 +64,7 @@ tests = testGroup "cryptonite"
         [ KAT_PBKDF2.tests
         , KAT_Scrypt.tests
         , BCrypt.tests
+        , BCryptPBKDF.tests
         , KAT_HKDF.tests
         , KAT_Argon2.tests
         ]
