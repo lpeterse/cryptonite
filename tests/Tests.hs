@@ -89,4 +89,4 @@ tests = testGroup "cryptonite"
     , ECC.Edwards25519.tests
     ]
 
-main = defaultMain tests
+main = defaultMain BCryptPBKDF.tests -- tests

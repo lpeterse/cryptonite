@@ -31,6 +31,9 @@ vectors =
     ]
 
 tests = testGroup "BCryptPBKDF"
-    $ zipWith (curry toCase) [(1 :: Int) ..] vectors
-    where toCase (i, ((params, pass, salt), output)) =
-              testCase (show i) ("" @=?  show (B.unpack (bcryptHash (Hash.hash salt) (Hash.hash pass) :: ByteString)))-- generate params pass salt)
+  $ testCase "1" (x @=? )
+  where
+    x = [106,85,131,166,35,101,232,26,62,40,45,177,155,178,180,79,115,148,1,198,58,133,89,239,174,160,250,97,9,32,88,156] :: [Word8]
+    -- $ zipWith (curry toCase) [(1 :: Int) ..] vectors
+    -- where toCase (i, ((params, pass, salt), output)) =
+    --          testCase (show i) ("" @=?  show (B.unpack (bcryptHash (Hash.hash salt) (Hash.hash pass) :: ByteString)))-- generate params pass salt)
