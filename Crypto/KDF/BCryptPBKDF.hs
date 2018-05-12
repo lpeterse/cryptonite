@@ -19,6 +19,7 @@ import qualified Basement.Block.Mutable           as Block
 import           Basement.Monad                   (PrimState)
 import           Basement.Types.OffsetSize        (CountOf (..), Offset (..))
 import           Control.Exception                (finally)
+import           Control.Monad                    (when)
 import qualified Crypto.Cipher.Blowfish.Box       as Blowfish
 import qualified Crypto.Cipher.Blowfish.Primitive as Blowfish
 import           Crypto.Hash.Algorithms           (SHA512 (..))
@@ -124,11 +125,13 @@ generate params pass salt
                         memXor outPtr outPtr tmpPtr outLen
                     -- Spread the current out buffer evenly over the key buffer.
                     -- After both loops have run every byte of the key buffer
-                    -- will have been written to and and every byte of generated
-                    -- output will have been used.
-                    forM_ [0..fromIntegral outLen - 1] $ \i-> do
-                        w8 <- peekByteOff outPtr i :: IO Word8
-                        pokeByteOff keyPtr (i * blocks + block - 1) w8
+                    -- will have been written to exactly once, but not all bytes
+                    -- of the output will have been used.
+                    forM_ [0..fromIntegral outLen - 1] $ \outIdx-> do
+                        let keyIdx = outIdx * blocks + block - 1
+                        when (outIdx < outLen) $ do
+                            w8 <- peekByteOff outPtr outIdx :: IO Word8
+                            pokeByteOff keyPtr keyIdx w8
 
 -- | Internal hash function used by `generate`.
 --
