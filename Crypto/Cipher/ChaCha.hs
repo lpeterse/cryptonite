@@ -16,6 +16,12 @@ module Crypto.Cipher.ChaCha
     , initializeSimple
     , generateSimple
     , StateSimple
+
+    , MutableState
+    , mutNew
+    , mutInitialize
+    , mutGenerateUnsafe
+    , mutCombineUnsafe
     ) where
 
 import           Crypto.Internal.ByteArray (ByteArrayAccess, ByteArray, ScrubbedBytes)
@@ -124,3 +130,51 @@ foreign import ccall "cryptonite_chacha_generate"
 foreign import ccall "cryptonite_chacha_random"
     ccryptonite_chacha_random :: Int -> Ptr Word8 -> Ptr StateSimple -> CUInt -> IO ()
 
+
+-------------------------------------------------------------------------------
+-- MUTABLE INTERFACE
+-------------------------------------------------------------------------------
+
+newtype MutableState = MutableState ScrubbedBytes
+    deriving (NFData)
+
+mutNew :: IO MutableState
+mutNew = do
+    stPtr <- B.alloc 132 $ \stPtr -> pure ()
+    return $ MutableState stPtr
+
+mutInitialize :: (ByteArrayAccess key, ByteArrayAccess nonce)
+    => MutableState
+    -> Int   -- ^ number of rounds (8,12,20)
+    -> key   -- ^ the key (128 or 256 bits)
+    -> nonce -- ^ the nonce (64 or 96 bits)
+    -> IO () -- ^ the initial ChaCha state
+mutInitialize (MutableState st) nbRounds key nonce
+    | not (kLen `elem` [16,32])       = error "ChaCha: key length should be 128 or 256 bits"
+    | not (nonceLen `elem` [8,12])    = error "ChaCha: nonce length should be 64 or 96 bits"
+    | not (nbRounds `elem` [8,12,20]) = error "ChaCha: rounds should be 8, 12 or 20"
+    | otherwise                       =
+        B.withByteArray st $ \stPtr ->
+        B.withByteArray nonce $ \noncePtr  ->
+        B.withByteArray key   $ \keyPtr ->
+            ccryptonite_chacha_init stPtr (fromIntegral nbRounds) kLen keyPtr nonceLen noncePtr
+    where
+        kLen     = B.length key
+        nonceLen = B.length nonce
+
+mutGenerateUnsafe :: MutableState
+    -> Ptr Word8
+    -> Int
+    -> IO ()
+mutGenerateUnsafe (MutableState st) dstPtr len =
+    B.withByteArray st $ \ctx ->
+        ccryptonite_chacha_generate dstPtr ctx (fromIntegral len)
+
+mutCombineUnsafe :: MutableState
+    -> Ptr Word8
+    -> Ptr Word8
+    -> Int
+    -> IO ()
+mutCombineUnsafe (MutableState st) dstPtr srcPtr len =
+    B.withByteArray st $ \ctx ->
+        ccryptonite_chacha_combine dstPtr ctx srcPtr (fromIntegral len)

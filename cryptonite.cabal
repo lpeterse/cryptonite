@@ -108,6 +108,7 @@ Library
                      Crypto.Cipher.CAST5
                      Crypto.Cipher.Camellia
                      Crypto.Cipher.ChaCha
+                     Crypto.Cipher.ChaCha2
                      Crypto.Cipher.ChaChaPoly1305
                      Crypto.Cipher.DES
                      Crypto.Cipher.RC4

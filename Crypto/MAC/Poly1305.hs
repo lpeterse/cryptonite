@@ -22,6 +22,9 @@ module Crypto.MAC.Poly1305
     , finalize   -- :: State -> Auth
     -- * One-pass MAC function
     , auth
+    , MutableState
+    , mutNew
+    , mutAuthUnsafe
     ) where
 
 import           Foreign.Ptr
@@ -109,3 +112,20 @@ auth key d
                 B.withByteArray d $ \dataPtr ->
                     c_poly1305_update (castPtr ctxPtr) dataPtr (fromIntegral $ B.length d)
                 c_poly1305_finalize dst (castPtr ctxPtr)
+
+
+newtype MutableState = MutableState ScrubbedBytes
+
+mutNew :: IO MutableState
+mutNew = MutableState <$> B.alloc 84 (const $ pure ())
+
+mutAuthUnsafe :: (ByteArrayAccess key, ByteArrayAccess ba) => MutableState -> key -> ba -> Ptr Word8 -> IO ()
+mutAuthUnsafe (MutableState ctx) key d dstPtr
+    | B.length key /= 32 = error "Poly1305: key length expected 32 bytes"
+    | otherwise          = 
+        B.withByteArray ctx $ \ctxPtr ->
+        B.withByteArray key $ \keyPtr -> do
+            c_poly1305_init (castPtr ctxPtr) keyPtr
+            B.withByteArray d $ \dataPtr ->
+                c_poly1305_update (castPtr ctxPtr) dataPtr (fromIntegral $ B.length d)
+            c_poly1305_finalize dstPtr (castPtr ctxPtr)
